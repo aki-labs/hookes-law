@@ -24,6 +24,7 @@ define( function( require ) {
   var Screen = require( 'JOIST/Screen' );
   var ScreenView = require( 'JOIST/ScreenView' );
   var VBox = require( 'SCENERY/nodes/VBox' );
+  var BooleanProperty = require( 'AXON/BooleanProperty' );
 
   // constants
   var REENTRANT = false; // whether Properties are reentrant
@@ -52,6 +53,10 @@ define( function( require ) {
 
     var self = this;
 
+    this.xPropertyIsUserControlledProperty = new BooleanProperty( false );
+    this.fPropertyIsUserControlledProperty = new BooleanProperty( false );
+    this.pPropertyIsUserControlledProperty = new BooleanProperty( false );
+
     // @public x: displacement of the spring from equilibrium
     // This corresponds to Spring displacementProperty.
     this.xProperty = new NumberProperty( 0, {
@@ -79,16 +84,22 @@ define( function( require ) {
     this.pProperty.link( function( left ) { phet.log && phet.log( 'p=' + left ); } );
 
     this.xProperty.link( function( displacement ) {
-      self.pProperty.set( SPRING_EQUILIBRIUM_X + displacement ); // p = e + x
-      self.fProperty.set( SPRING_CONSTANT * displacement ); // F = kx
+      if ( self.xPropertyIsUserControlledProperty.value ) {
+        self.pProperty.set( SPRING_EQUILIBRIUM_X + displacement ); // p = e + x
+        self.fProperty.set( SPRING_CONSTANT * displacement ); // F = kx
+      }
     } );
 
     this.fProperty.link( function( appliedForce ) {
-      self.xProperty.set( appliedForce / SPRING_CONSTANT ); // x = F/k
+      if ( self.fPropertyIsUserControlledProperty.value ) {
+        self.xProperty.set( appliedForce / SPRING_CONSTANT ); // x = F/k
+      }
     } );
 
     this.pProperty.link( function( left ) {
-      self.xProperty.set( left - SPRING_EQUILIBRIUM_X ); // x = p - e
+      if ( self.pPropertyIsUserControlledProperty.value ) {
+        self.xProperty.set( left - SPRING_EQUILIBRIUM_X ); // x = p - e
+      }
     } );
   }
 
@@ -115,7 +126,7 @@ define( function( require ) {
       align: 'center',
       spacing: 40,
       children: [
-        createNumberControl( 'x:', model.xProperty, {
+        createNumberControl( 'x:', model.xProperty, model.xPropertyIsUserControlledProperty, {
           decimalPlaces: 3,
           delta: 0.01
         } ),
@@ -135,7 +146,7 @@ define( function( require ) {
       align: 'center',
       spacing: 40,
       children: [
-        createNumberControl( 'F:', model.fProperty, {
+        createNumberControl( 'F:', model.fProperty, model.fPropertyIsUserControlledProperty, {
           decimalPlaces: 1,
           delta: 1
         } ),
@@ -149,7 +160,7 @@ define( function( require ) {
       align: 'center',
       spacing: 40,
       children: [
-        createNumberControl( 'p:', model.pProperty, {
+        createNumberControl( 'p:', model.pProperty, model.pPropertyIsUserControlledProperty, {
           decimalPlaces: 3,
           delta: 0.01
         } ),
@@ -180,14 +191,14 @@ define( function( require ) {
    * @param {NumberProperty} property
    * @param {Object} [options]
    */
-  function createNumberControl( label, property, options ) {
-    assert && assert( property.range, 'missing range' );
-    return new NumberControl( label, property, property.range, _.extend( {
+  function createNumberControl( label, numberProperty, numberPropertyIsUserControlledProperty, options ) {
+    assert && assert( numberProperty.range, 'missing range' );
+    return new NumberControl( label, numberProperty, numberProperty.range, numberPropertyIsUserControlledProperty, _.extend( {
       titleFont: FONT,
       valueFont: FONT,
       majorTicks: [
-        { value: property.range.min, label: new RichText( property.range.min ) },
-        { value: property.range.max, label: new RichText( property.range.max ) }
+        { value: numberProperty.range.min, label: new RichText( numberProperty.range.min ) },
+        { value: numberProperty.range.max, label: new RichText( numberProperty.range.max ) }
       ]
     }, options ) );
   }
