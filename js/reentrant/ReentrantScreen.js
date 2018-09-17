@@ -26,7 +26,7 @@ define( function( require ) {
   var VBox = require( 'SCENERY/nodes/VBox' );
 
   // constants
-  var REENTRANT = true; // whether Properties are reentrant
+  var REENTRANT = false; // whether Properties are reentrant
   var SPRING_CONSTANT = 100; // k: spring constant
   var SPRING_EQUILIBRIUM_X = 1.5; // e: spring's equilibrium position
   var FONT = new PhetFont( 22 );
