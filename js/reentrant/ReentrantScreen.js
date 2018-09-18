@@ -70,9 +70,9 @@ define( function( require ) {
       range: new Range( SPRING_EQUILIBRIUM_X + this.xProperty.range.min, SPRING_EQUILIBRIUM_X + this.xProperty.range.max )
     } );
 
-    this.userControlledXProperty = new UserControlledProperty( this.xProperty, { range: this.xProperty.range } );
-    this.userControlledFProperty = new UserControlledProperty( this.fProperty, { range: this.fProperty.range } );
-    this.userControlledPProperty = new UserControlledProperty( this.pProperty, { range: this.pProperty.range } );
+    this.userControllableXProperty = new UserControlledProperty( this.xProperty );
+    this.userControllableFProperty = new UserControlledProperty( this.fProperty );
+    this.userControllablePProperty = new UserControlledProperty( this.pProperty );
 
     // logging
     this.xProperty.link( function( displacement ) { phet.log && phet.log( 'x=' + displacement ); } );
@@ -80,20 +80,26 @@ define( function( require ) {
     this.pProperty.link( function( left ) { phet.log && phet.log( 'p=' + left ); } );
 
     this.xProperty.link( function( displacement ) {
-      if ( self.userControlledXProperty.isUserControlled() ) {
+
+      // If the user is changing the xProperty from the UI, then compute p=p(x) and F=F(x)
+      if ( self.userControllableXProperty.isUserControlled() ) {
         self.pProperty.set( SPRING_EQUILIBRIUM_X + displacement ); // p = e + x
         self.fProperty.set( SPRING_CONSTANT * displacement ); // F = kx
       }
     } );
 
     this.fProperty.link( function( appliedForce ) {
-      if ( self.userControlledFProperty.isUserControlled() ) {
+
+      // If the user is changing the fProperty from the UI, then compute x=x(F)
+      if ( self.userControllableFProperty.isUserControlled() ) {
         self.xProperty.set( appliedForce / SPRING_CONSTANT ); // x = F/k
       }
     } );
 
     this.pProperty.link( function( left ) {
-      if ( self.userControlledPProperty.isUserControlled() ) {
+
+      // If the user is changing the pProperty from the UI, then compute x=x(p)
+      if ( self.userControllablePProperty.isUserControlled() ) {
         self.xProperty.set( left - SPRING_EQUILIBRIUM_X ); // x = p - e
       }
     } );
@@ -122,7 +128,7 @@ define( function( require ) {
       align: 'center',
       spacing: 40,
       children: [
-        createNumberControl( 'x:', model.userControlledXProperty, {
+        createNumberControl( 'x:', model.userControllableXProperty, {
           decimalPlaces: 3,
           delta: 0.01
         } ),
@@ -142,7 +148,7 @@ define( function( require ) {
       align: 'center',
       spacing: 40,
       children: [
-        createNumberControl( 'F:', model.userControlledFProperty, {
+        createNumberControl( 'F:', model.userControllableFProperty, {
           decimalPlaces: 1,
           delta: 1
         } ),
@@ -156,7 +162,7 @@ define( function( require ) {
       align: 'center',
       spacing: 40,
       children: [
-        createNumberControl( 'p:', model.userControlledPProperty, {
+        createNumberControl( 'p:', model.userControllablePProperty, {
           decimalPlaces: 3,
           delta: 0.01
         } ),
@@ -187,14 +193,14 @@ define( function( require ) {
    * @param {NumberProperty} property
    * @param {Object} [options]
    */
-  function createNumberControl( label, numberProperty, numberPropertyIsUserControlledProperty, options ) {
-    assert && assert( numberProperty.range, 'missing range' );
-    return new NumberControl( label, numberProperty, numberProperty.range, numberPropertyIsUserControlledProperty, _.extend( {
+  function createNumberControl( label, property, options ) {
+    assert && assert( property.range, 'missing range' );
+    return new NumberControl( label, property, property.range, _.extend( {
       titleFont: FONT,
       valueFont: FONT,
       majorTicks: [
-        { value: numberProperty.range.min, label: new RichText( numberProperty.range.min ) },
-        { value: numberProperty.range.max, label: new RichText( numberProperty.range.max ) }
+        { value: property.range.min, label: new RichText( property.range.min ) },
+        { value: property.range.max, label: new RichText( property.range.max ) }
       ]
     }, options ) );
   }
