@@ -18,7 +18,8 @@
     "supportedBrands": [
       "phet",
       "phet-io",
-      "adapted-from-phet"
+      "adapted-from-phet",
+      "aki"
     ],
     "simulation": true,
     "phet-io": {
